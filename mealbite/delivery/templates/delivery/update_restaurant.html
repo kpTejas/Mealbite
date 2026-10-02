@@ -1,0 +1,52 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}Edit {{ restaurant.name }} | MealBite Admin{% endblock %}
+
+{% block content %}
+<div class="section-header" style="max-width: 650px; margin: 0 auto 1.5rem;">
+    <div>
+        <h1 class="section-title">✏️ Update Restaurant</h1>
+        <p class="section-subtitle">Modify details for {{ restaurant.name }}</p>
+    </div>
+    <div>
+        <a href="{% url 'open_show_restaurant' %}" class="btn btn-secondary btn-sm">
+            ← Cancel & Return
+        </a>
+    </div>
+</div>
+
+<div class="form-card">
+    <form action="{% url 'update_restaurant' restaurant.id %}" method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="name">Restaurant Name</label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ restaurant.name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="cuisine">Cuisine Specialties</label>
+            <input type="text" id="cuisine" name="cuisine" class="form-control" value="{{ restaurant.cuisine }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="picture">Restaurant Cover Photo URL</label>
+            <input type="url" id="picture" name="picture" class="form-control" value="{{ restaurant.picture }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="rating">Rating (0 - 5.0)</label>
+            <input type="number" id="rating" name="rating" class="form-control" min="0" max="5" step="0.1" value="{{ restaurant.rating }}" required>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 2;">
+                Save Changes
+            </button>
+            <a href="{% url 'open_show_restaurant' %}" class="btn btn-secondary" style="flex: 1;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

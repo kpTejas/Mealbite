@@ -1,0 +1,90 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}Order Confirmed | MealBite{% endblock %}
+
+{% block content %}
+<div class="order-success-card">
+    <div class="success-icon-wrap">
+        ✓
+    </div>
+
+    <span class="hero-tag" style="background: #ECFDF5; color: #059669; border-color: #A7F3D0; margin-bottom: 0.75rem;">
+        {% if payment_id %}Paid via {{ payment_method|default:'UPI / Online' }} • Confirmed{% else %}Order Placed • Cash on Delivery{% endif %}
+    </span>
+    
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+        Thank You, {{ username }}!
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto 1.5rem;">
+        Your order has been received and our kitchen partner is preparing your delicious meal right now.
+    </p>
+
+    <!-- Payment ID Banner -->
+    {% if payment_id %}
+    <div style="background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-md); padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; text-align: left; font-size: 0.88rem; color: #065F46;">
+        <div style="font-weight: 750; margin-bottom: 0.2rem;">✅ {{ payment_method|default:'UPI / Online' }} Payment Verified</div>
+        <div>Transaction Ref: <code style="font-weight: 700; color: #047857; background: #D1FAE5; padding: 0.15rem 0.5rem; border-radius: 4px;">{{ payment_id }}</code></div>
+        {% if order_id %}
+            <div style="font-size: 0.8rem; color: #065F46; margin-top: 0.25rem;">Order Reference: <code>{{ order_id }}</code></div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Delivery Status Banner -->
+    <div style="background: #FFF7ED; border: 1px solid #FFEDD5; border-radius: var(--radius-md); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; text-align: left;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.5rem;">🛵</span>
+            <div>
+                <div style="font-weight: 700; color: #9A3412; font-size: 0.95rem;">Estimated Delivery</div>
+                <div style="font-size: 0.85rem; color: #C2410C;">Arriving in 25 - 35 minutes</div>
+            </div>
+        </div>
+        <span style="background: #EA580C; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: var(--radius-full);">
+            ON THE WAY
+        </span>
+    </div>
+
+    <!-- Delivery Address Details -->
+    <div class="address-box">
+        <div class="address-box-title">📍 Delivery Destination</div>
+        <div style="font-weight: 600; color: var(--text-main); font-size: 1rem; margin-top: 0.25rem;">
+            {{ customer.address|default:"Customer delivery address" }}
+        </div>
+        {% if customer.mobile %}
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.35rem;">
+                Recipient: {{ customer.username }} • Phone: {{ customer.mobile }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Items Summary -->
+    {% if cart_items %}
+        <div style="text-align: left; margin: 1.5rem 0; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden;">
+            <div style="background: #F8FAFC; padding: 0.75rem 1rem; font-weight: 700; font-size: 0.875rem; color: var(--secondary); border-bottom: 1px solid var(--border-color);">
+                Items in This Order
+            </div>
+            <div style="padding: 0.5rem 1rem;">
+                {% for item in cart_items %}
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #F1F5F9; font-size: 0.92rem;">
+                        <span>{{ item.name }}</span>
+                        <span style="font-weight: 600; color: var(--text-main);">₹{{ item.price|floatformat:2 }}</span>
+                    </div>
+                {% endfor %}
+                <div style="display: flex; justify-content: space-between; padding: 0.75rem 0 0.25rem; font-weight: 800; font-size: 1.05rem;">
+                    <span>Total Paid</span>
+                    <span style="color: var(--primary);">₹{{ total_price|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+        <a href="{% url 'customer_home' username %}" class="btn btn-primary">
+            🍔 Explore More Restaurants
+        </a>
+        <a href="{% url 'index' %}" class="btn btn-secondary">
+            Go to Homepage
+        </a>
+    </div>
+</div>
+{% endblock %}

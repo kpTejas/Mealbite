@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MealBite | Delicious Food Delivered Fast{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% if username %}{% url 'customer_home' username %}{% else %}{% url 'index' %}{% endif %}" class="nav-brand">
+                <span>🍔</span> Meal<span class="highlight">Bite</span>
+                <span class="brand-badge">Fresh</span>
+            </a>
+
+            <ul class="nav-links">
+                {% if username == 'admin' %}
+                    <li><a href="{% url 'admin_home' %}" class="nav-link">📊 Admin Dashboard</a></li>
+                    <li><a href="{% url 'open_add_restaurant' %}" class="nav-link">➕ Add Restaurant</a></li>
+                    <li><a href="{% url 'open_show_restaurant' %}" class="nav-link">🏪 Restaurants</a></li>
+                    <li><span class="nav-user-badge"><span class="avatar-dot"></span> Admin</span></li>
+                    <li><a href="{% url 'index' %}" class="btn btn-secondary btn-sm">Logout</a></li>
+                {% elif username %}
+                    <li><a href="{% url 'customer_home' username %}" class="nav-link">🏠 Restaurants</a></li>
+                    <li>
+                        <a href="{% url 'show_cart' username %}" class="btn cart-btn-badge">
+                            🛒 View Cart {% if cart_count %}<span class="cart-count">{{ cart_count }}</span>{% endif %}
+                        </a>
+                    </li>
+                    <li><span class="nav-user-badge"><span class="avatar-dot"></span> {{ username }}</span></li>
+                    <li><a href="{% url 'index' %}" class="btn btn-secondary btn-sm">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'open_signin' %}" class="nav-link">Sign In</a></li>
+                    <li><a href="{% url 'open_signup' %}" class="btn btn-primary btn-sm">Get Started</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Global Messages / Alerts -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}">
+                <span>
+                    {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}⚠️{% else %}ℹ️{% endif %}
+                    {{ message }}
+                </span>
+                <button type="button" class="alert-close" onclick="this.parentElement.remove();">&times;</button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 <strong>MealBite</strong> — Fast, fresh & delicious meals delivered right to your door. Crafted with ❤️</p>
+    </footer>
+
+    <script>
+        // Automatic image fallback for any broken external image URLs
+        document.addEventListener('DOMContentLoaded', () => {
+            const fallbackFood = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';
+            document.querySelectorAll('img').forEach(img => {
+                img.addEventListener('error', function() {
+                    this.onerror = null;
+                    this.src = fallbackFood;
+                });
+                if (!img.src || img.src.includes('google.com/imgres')) {
+                    img.src = fallbackFood;
+                }
+            });
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

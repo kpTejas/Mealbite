@@ -1,0 +1,384 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}Checkout & Payment | MealBite{% endblock %}
+
+{% block extra_head %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <div>
+        <h1 class="section-title">💳 Complete Your Order</h1>
+        <p class="section-subtitle">Select your preferred payment method below</p>
+    </div>
+    <div>
+        <a href="{% url 'show_cart' username %}" class="btn btn-secondary">
+            ← Return to Cart
+        </a>
+    </div>
+</div>
+
+{% if error %}
+    <div class="order-summary-card" style="text-align: center; padding: 3rem 1.5rem; max-width: 600px; margin: 2rem auto;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+        <h3>{{ error }}</h3>
+        <p style="color: var(--text-muted); margin: 1rem 0 1.5rem;">Please add delicious dishes to your cart first.</p>
+        <a href="{% url 'customer_home' username %}" class="btn btn-primary">Browse Restaurants</a>
+    </div>
+{% else %}
+    <div class="cart-layout">
+        <!-- Left: Delivery Address & Ordered Items -->
+        <div>
+            <!-- Address Card -->
+            <div class="order-summary-card" style="margin-bottom: 1.5rem;">
+                <h3 class="order-summary-title">📍 Delivery Details</h3>
+                <div class="address-box" style="margin: 0;">
+                    <div class="address-box-title">Delivering to {{ customer.username|default:username }}</div>
+                    <div style="font-size: 1rem; color: var(--text-main); font-weight: 600; margin-top: 0.25rem;">
+                        {{ customer.address|default:"Customer delivery address" }}
+                    </div>
+                    {% if customer.mobile %}
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+                            📞 Phone: {{ customer.mobile }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Items Table Card -->
+            <div class="table-card">
+                <div style="padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 750; display: flex; justify-content: space-between;">
+                    <span>Ordered Dishes ({{ cart_items|length }})</span>
+                    <span style="color: var(--primary);">₹{{ total_price|floatformat:2 }}</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Type</th>
+                                <th style="text-align: right;">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td style="font-weight: 600;">{{ item.name }}</td>
+                                    <td>
+                                        {% if item.vegeterian %}
+                                            <span style="color: var(--veg-green); font-size: 0.82rem; font-weight: 700;">● Veg</span>
+                                        {% else %}
+                                            <span style="color: var(--nonveg-red); font-size: 0.82rem; font-weight: 700;">● Non-Veg</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="text-align: right; font-weight: 700; color: var(--primary);">
+                                        ₹{{ item.price|floatformat:2 }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Payment Methods Panel -->
+        <div>
+            <div class="order-summary-card">
+                <h3 class="order-summary-title">Choose Payment Method</h3>
+
+                <!-- Bill Details Mini Breakdown -->
+                <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.3rem;">
+                        <span>Total Bill</span>
+                        <span style="font-weight: 700; color: var(--text-main);">₹{{ total_price|floatformat:2 }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--text-muted);">
+                        <span>Delivery</span>
+                        <span style="color: var(--success); font-weight: 700;">FREE</span>
+                    </div>
+                </div>
+
+                <!-- Payment Selection Tabs -->
+                <div class="payment-tabs">
+                    <button type="button" class="payment-tab-btn active" id="tab-upi" onclick="switchTab('upi')">
+                        📱 UPI Pay
+                    </button>
+                    <button type="button" class="payment-tab-btn" id="tab-card" onclick="switchTab('card')">
+                        💳 Card / Netbanking
+                    </button>
+                    <button type="button" class="payment-tab-btn" id="tab-cod" onclick="switchTab('cod')">
+                        💵 Cash
+                    </button>
+                </div>
+
+                <!-- TAB 1: UPI PAYMENT OPTION (DEFAULT) -->
+                <div id="pane-upi" class="payment-pane active">
+                    <!-- UPI Apps Quick Selector -->
+                    <div class="upi-apps-row">
+                        <button type="button" class="upi-app-btn selected" id="btn-app-qr" onclick="selectUpiMode('qr')">
+                            <span style="font-size: 1.4rem;">📷</span>
+                            <span>Scan QR</span>
+                        </button>
+                        <button type="button" class="upi-app-btn" id="btn-app-gpay" onclick="selectUpiMode('gpay')">
+                            <span style="font-size: 1.4rem;">🔵</span>
+                            <span>Google Pay</span>
+                        </button>
+                        <button type="button" class="upi-app-btn" id="btn-app-phonepe" onclick="selectUpiMode('phonepe')">
+                            <span style="font-size: 1.4rem;">🟣</span>
+                            <span>PhonePe</span>
+                        </button>
+                        <button type="button" class="upi-app-btn" id="btn-app-paytm" onclick="selectUpiMode('paytm')">
+                            <span style="font-size: 1.4rem;">🔷</span>
+                            <span>Paytm</span>
+                        </button>
+                    </div>
+
+                    <!-- Sub-view 1: QR Code Mode -->
+                    <div id="upi-mode-qr" class="upi-qr-container">
+                        <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">
+                            Scan QR with any UPI App
+                        </div>
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi%3A%2F%2Fpay%3Fpa%3Dmealbite%40oksbi%26pn%3DMealBite%20Foods%26am%3D{{ total_price|floatformat:2 }}%26cu%3DINR" 
+                             alt="UPI QR Code" 
+                             class="upi-qr-image">
+                        <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-bottom: 0.35rem;">
+                            ₹{{ total_price|floatformat:2 }}
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+                            Supported: GPay, PhonePe, Paytm, BHIM, Cred
+                        </div>
+                        <button type="button" class="btn btn-primary btn-block" onclick="processSimulatedUpi('QR Code Scan')">
+                            ✓ I Have Paid via QR Code
+                        </button>
+                    </div>
+
+                    <!-- Sub-view 2: UPI ID (VPA) Mode -->
+                    <div id="upi-mode-vpa" class="upi-box" style="display: none;">
+                        <label for="upi-id-input" style="display: block; font-weight: 700; font-size: 0.85rem; color: var(--secondary); margin-bottom: 0.4rem;">
+                            Enter UPI ID / VPA
+                        </label>
+                        <input type="text" id="upi-id-input" class="form-control" placeholder="e.g. mobile@upi or username@oksbi" value="{{ customer.username }}@oksbi">
+                        
+                        <div class="upi-vpa-pills">
+                            <button type="button" class="upi-pill" onclick="appendUpiSuffix('@oksbi')">@oksbi</button>
+                            <button type="button" class="upi-pill" onclick="appendUpiSuffix('@okhdfcbank')">@okhdfcbank</button>
+                            <button type="button" class="upi-pill" onclick="appendUpiSuffix('@paytm')">@paytm</button>
+                            <button type="button" class="upi-pill" onclick="appendUpiSuffix('@ybl')">@ybl</button>
+                            <button type="button" class="upi-pill" onclick="document.getElementById('upi-id-input').value='success@upi';">Demo: success@upi</button>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-block" style="margin-top: 1rem;" onclick="submitUpiVpa()">
+                            Verify & Pay ₹{{ total_price|floatformat:2 }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: RAZORPAY GATEWAY -->
+                <div id="pane-card" class="payment-pane">
+                    <div style="background: #FAFAFA; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+                        <div style="font-weight: 750; font-size: 0.95rem; margin-bottom: 0.4rem;">
+                            💳 Credit / Debit Card & Netbanking
+                        </div>
+                        <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1rem;">
+                            Processed securely through Razorpay gateway.
+                        </p>
+
+                        <!-- Live Error Alert Banner (if Razorpay failed) -->
+                        <div id="payment-error-alert" style="display: none; background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 1rem; font-size: 0.84rem; line-height: 1.4;">
+                        </div>
+
+                        <button type="button" id="rzp-button" class="btn btn-primary btn-block" style="font-weight: 700; padding: 0.85rem;">
+                            Pay ₹{{ total_price|floatformat:2 }} with Razorpay
+                        </button>
+
+                        <div style="margin-top: 1rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.8rem; color: #78350F;">
+                            <strong>💡 Razorpay Domestic Test Card:</strong><br>
+                            Card: <code>4718 6091 0820 4366</code> • Exp: <code>12/28</code> • CVV: <code>123</code><br>
+                            <em>(Note: If popup appears blank due to browser adblockers, please use the <strong>UPI Pay</strong> tab above).</em>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: CASH ON DELIVERY -->
+                <div id="pane-cod" class="payment-pane">
+                    <div style="background: #FAFAFA; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; margin-bottom: 1.25rem;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💵</div>
+                        <h4 style="font-size: 1.05rem; font-weight: 750; margin-bottom: 0.35rem;">Pay Upon Delivery</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                            Pay ₹{{ total_price|floatformat:2 }} via Cash or UPI QR to the delivery partner at your doorstep.
+                        </p>
+                        <a href="{% url 'orders' username %}?payment_method=Cash%20on%20Delivery" class="btn btn-primary btn-block">
+                            Confirm Order with Pay on Delivery
+                        </a>
+                    </div>
+                </div>
+
+                <div style="padding: 0.5rem; text-align: center; font-size: 0.78rem; color: var(--text-muted);">
+                    🔒 100% Safe & Instant Order Processing
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Simulated Payment Processing Modal Overlay -->
+<div id="pay-overlay" class="pay-loader-overlay">
+    <div class="pay-loader-card">
+        <div id="pay-spinner" class="pay-spinner"></div>
+        <div id="pay-icon" style="font-size: 3rem; display: none; margin-bottom: 1rem;">✅</div>
+        <h3 id="pay-title" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem;">Connecting to UPI...</h3>
+        <p id="pay-desc" style="color: var(--text-muted); font-size: 0.9rem;">
+            Please wait while we communicate with your UPI app and bank.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if not error %}
+<script>
+    // Tab Switching Logic
+    function switchTab(tab) {
+        document.querySelectorAll('.payment-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.payment-pane').forEach(p => p.classList.remove('active'));
+
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.getElementById('pane-' + tab).classList.add('active');
+    }
+
+    // UPI App Mode Switching Logic
+    function selectUpiMode(mode) {
+        document.querySelectorAll('.upi-app-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById('btn-app-' + mode).classList.add('selected');
+
+        const qrContainer = document.getElementById('upi-mode-qr');
+        const vpaContainer = document.getElementById('upi-mode-vpa');
+
+        if (mode === 'qr') {
+            qrContainer.style.display = 'flex';
+            vpaContainer.style.display = 'none';
+        } else {
+            qrContainer.style.display = 'none';
+            vpaContainer.style.display = 'block';
+
+            // Auto-fill app specific suffix
+            const input = document.getElementById('upi-id-input');
+            const user = "{{ username }}".toLowerCase().replace(/\s+/g, '');
+            if (mode === 'gpay') input.value = user + '@oksbi';
+            if (mode === 'phonepe') input.value = user + '@ybl';
+            if (mode === 'paytm') input.value = user + '@paytm';
+        }
+    }
+
+    function appendUpiSuffix(suffix) {
+        const input = document.getElementById('upi-id-input');
+        const base = input.value.split('@')[0] || "{{ username }}".toLowerCase().replace(/\s+/g, '');
+        input.value = base + suffix;
+    }
+
+    function submitUpiVpa() {
+        const vpa = document.getElementById('upi-id-input').value.trim();
+        if (!vpa || !vpa.includes('@')) {
+            alert('Please enter a valid UPI ID (e.g. yourname@oksbi)');
+            return;
+        }
+        processSimulatedUpi('UPI ID (' + vpa + ')');
+    }
+
+    // Interactive UPI Verification & Completion Animation
+    function processSimulatedUpi(methodName) {
+        const overlay = document.getElementById('pay-overlay');
+        const spinner = document.getElementById('pay-spinner');
+        const icon = document.getElementById('pay-icon');
+        const title = document.getElementById('pay-title');
+        const desc = document.getElementById('pay-desc');
+
+        overlay.classList.add('show');
+        title.innerText = "Requesting UPI Approval...";
+        desc.innerText = "Connecting to " + methodName + "... Please approve payment.";
+
+        setTimeout(() => {
+            spinner.style.display = 'none';
+            icon.style.display = 'block';
+            title.innerText = "Payment Verified! 🎉";
+            desc.innerText = "₹{{ total_price|floatformat:2 }} received successfully. Redirecting to your order confirmation...";
+
+            setTimeout(() => {
+                const upiTxnId = 'UPI' + Math.floor(1000000000 + Math.random() * 9000000000);
+                window.location.href = "{% url 'orders' username %}?payment_method=" + encodeURIComponent(methodName) + "&payment_id=" + encodeURIComponent(upiTxnId);
+            }, 1200);
+        }, 1500);
+    }
+
+    // Razorpay Integration Logic
+    const rzpOptions = {
+        "key": "{{ razorpay_key_id }}",
+        "amount": {{ amount_in_paise }},
+        "currency": "INR",
+        "name": "MealBite Foods",
+        "description": "Payment for Meal Order",
+        "order_id": "{{ order_id }}",
+        "handler": function (response) {
+            const payId = response.razorpay_payment_id || '';
+            const orderId = response.razorpay_order_id || '{{ order_id }}';
+            window.location.href = "{% url 'orders' username %}?payment_method=Razorpay%20Online&payment_id=" + encodeURIComponent(payId) + "&order_id=" + encodeURIComponent(orderId);
+        },
+        "prefill": {
+            "name": "{{ customer.username|default:username }}",
+            "email": "{{ customer.email|default:'customer@example.com' }}",
+            "contact": "{{ customer.mobile|default:'9876543210' }}"
+        },
+        "theme": {
+            "color": "#FF5722"
+        },
+        "modal": {
+            "ondismiss": function() {
+                console.log("Razorpay checkout modal dismissed.");
+            }
+        }
+    };
+
+    const rzpBtn = document.getElementById('rzp-button');
+    if (rzpBtn) {
+        rzpBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('payment-error-alert');
+            if (errBox) errBox.style.display = 'none';
+
+            try {
+                if (typeof Razorpay !== 'undefined') {
+                    const rzp = new Razorpay(rzpOptions);
+                    
+                    rzp.on('payment.failed', function (resp) {
+                        console.error("Payment failed:", resp);
+                        let description = (resp.error && resp.error.description) ? resp.error.description : "Payment failed.";
+                        
+                        if ((resp.error && resp.error.reason === 'international_transaction_not_allowed') || description.toLowerCase().includes('domestic')) {
+                            description = "<strong>⚠️ International Card Blocked:</strong> " + description + "<br><br>👉 <strong>Easy Fix:</strong> Please use the <strong>UPI Pay</strong> tab above (or enter domestic card <code>4718 6091 0820 4366</code>).";
+                        }
+
+                        if (errBox) {
+                            errBox.style.display = 'block';
+                            errBox.innerHTML = description;
+                        } else {
+                            alert("Payment Unsuccessful: " + description.replace(/<[^>]*>/g, ''));
+                        }
+                    });
+
+                    rzp.open();
+                } else {
+                    alert("Razorpay popup could not be loaded (likely blocked by browser privacy/adblocker). Switching to UPI Pay...");
+                    switchTab('upi');
+                }
+            } catch (err) {
+                console.error("Razorpay exception:", err);
+                alert("Payment gateway error. Switching to UPI Pay...");
+                switchTab('upi');
+            }
+        });
+    }
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}Your Cart | MealBite{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <div>
+        <h1 class="section-title">🛒 Your Shopping Cart</h1>
+        <p class="section-subtitle">Review your selected items before proceeding to payment</p>
+    </div>
+    <div>
+        <a href="{% url 'customer_home' username %}" class="btn btn-secondary">
+            ← Continue Shopping
+        </a>
+    </div>
+</div>
+
+{% if itemList %}
+    <div class="cart-layout">
+        <!-- Cart Items List -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Details</th>
+                            <th>Price</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in itemList %}
+                            <tr>
+                                <td style="width: 80px;">
+                                    <img src="{{ item.picture }}" alt="{{ item.name }}" class="table-img" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80';">
+                                </td>
+                                <td>
+                                    <div style="font-weight: 700; font-size: 1.05rem; color: var(--text-main);">
+                                        {{ item.name }}
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                                        {{ item.description|truncatewords:10 }}
+                                    </div>
+                                    {% if item.vegeterian %}
+                                        <span style="display: inline-block; font-size: 0.72rem; color: var(--veg-green); font-weight: 700; margin-top: 0.3rem;">● Pure Veg</span>
+                                    {% else %}
+                                        <span style="display: inline-block; font-size: 0.72rem; color: var(--nonveg-red); font-weight: 700; margin-top: 0.3rem;">● Non-Veg</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-weight: 700; font-size: 1.1rem; color: var(--primary); white-space: nowrap;">
+                                    ₹{{ item.price|floatformat:2 }}
+                                </td>
+                                <td style="text-align: right;">
+                                    <a href="{% url 'remove_from_cart' item.id username %}" class="btn btn-danger btn-sm" title="Remove from cart" onclick="return confirm('Remove this item from your cart?');">
+                                        🗑️ Remove
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Order Summary Card -->
+        <div class="order-summary-card">
+            <h3 class="order-summary-title">Bill Summary</h3>
+            
+            <div class="summary-row">
+                <span>Items Subtotal</span>
+                <span>₹{{ total_price|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery Partner Fee</span>
+                <span style="color: var(--success); font-weight: 600;">FREE</span>
+            </div>
+            <div class="summary-row">
+                <span>Govt Taxes & Charges</span>
+                <span>₹0.00</span>
+            </div>
+
+            <div class="summary-row total">
+                <span>Grand Total</span>
+                <span class="price">₹{{ total_price|floatformat:2 }}</span>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <a href="{% url 'checkout' username %}" class="btn btn-primary btn-block" style="font-size: 1.05rem; padding: 0.85rem;">
+                    Proceed to Checkout ➔
+                </a>
+            </div>
+
+            <div style="margin-top: 1.25rem; font-size: 0.82rem; color: var(--text-muted); text-align: center;">
+                🔒 Safe & encrypted checkout via Razorpay
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="order-summary-card" style="text-align: center; padding: 4rem 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🛒</div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Your Cart is Empty</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.75rem;">
+            Looks like you haven't added anything to your cart yet. Explore our top restaurants!
+        </p>
+        <a href="{% url 'customer_home' username %}" class="btn btn-primary">
+            Explore Restaurants Now
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

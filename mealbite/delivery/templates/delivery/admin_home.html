@@ -1,0 +1,130 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}Admin Dashboard | MealBite{% endblock %}
+
+{% block content %}
+<div class="hero" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); padding: 2.25rem 2rem; margin-bottom: 2rem;">
+    <span class="hero-tag" style="background: rgba(59, 130, 246, 0.2); color: #60A5FA; border-color: rgba(59, 130, 246, 0.3);">
+        🛡️ Administrator Portal
+    </span>
+    <h1 class="hero-title" style="font-size: 2.2rem; margin-bottom: 0.5rem;">Welcome, Administrator</h1>
+    <p class="hero-subtitle" style="margin-bottom: 0; max-width: 600px;">
+        Oversee partner restaurants, update food menus, manage dishes and monitor customer activity in real time.
+    </p>
+</div>
+
+<!-- Admin Stat Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon orange">🏪</div>
+        <div>
+            <div class="stat-value">{{ total_restaurants }}</div>
+            <div class="stat-label">Active Restaurants</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue">🍕</div>
+        <div>
+            <div class="stat-value">{{ total_items }}</div>
+            <div class="stat-label">Total Menu Items</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">👥</div>
+        <div>
+            <div class="stat-value">{{ total_customers }}</div>
+            <div class="stat-label">Registered Customers</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Shortcuts -->
+<div class="section-header">
+    <div>
+        <h2 class="section-title">Quick Actions</h2>
+        <p class="section-subtitle">Manage platform food inventory and restaurant partners</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+    <div class="order-summary-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">➕</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem;">Add New Restaurant</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                Onboard a new restaurant partner with pictures, cuisine specialties, and rating.
+            </p>
+        </div>
+        <a href="{% url 'open_add_restaurant' %}" class="btn btn-primary">
+            + Onboard Restaurant
+        </a>
+    </div>
+
+    <div class="order-summary-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📋</div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem;">Manage Restaurants</h3>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+                View all current restaurants, modify details, delete listings or update individual menus.
+            </p>
+        </div>
+        <a href="{% url 'open_show_restaurant' %}" class="btn btn-secondary">
+            View All Restaurants ({{ total_restaurants }})
+        </a>
+    </div>
+</div>
+
+<!-- Active Restaurants Preview -->
+<div class="section-header">
+    <h2 class="section-title">Partner Restaurants</h2>
+    <a href="{% url 'open_show_restaurant' %}" class="btn btn-secondary btn-sm">Full Management ➔</a>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="modern-table">
+            <thead>
+                <tr>
+                    <th>Restaurant</th>
+                    <th>Cuisine</th>
+                    <th>Rating</th>
+                    <th style="text-align: right;">Quick Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in restaurantList %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <img src="{{ r.picture }}" alt="{{ r.name }}" class="table-img" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80';">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1.05rem;">{{ r.name }}</div>
+                                    <div style="font-size: 0.82rem; color: var(--text-muted);">ID: #{{ r.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span style="font-weight: 600; color: var(--secondary);">{{ r.cuisine }}</span></td>
+                        <td>
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #059669; padding: 0.2rem 0.55rem; border-radius: var(--radius-full); font-weight: 700; font-size: 0.85rem;">
+                                ★ {{ r.rating }}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div class="table-actions" style="justify-content: flex-end;">
+                                <a href="{% url 'open_update_menu' r.id %}" class="btn btn-primary btn-sm">Menu</a>
+                                <a href="{% url 'open_update_restaurant' r.id %}" class="btn btn-secondary btn-sm">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No restaurants found. Click "Add New Restaurant" to create one.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}Add New Restaurant | MealBite Admin{% endblock %}
+
+{% block content %}
+<div class="section-header" style="max-width: 650px; margin: 0 auto 1.5rem;">
+    <div>
+        <h1 class="section-title">➕ Add New Restaurant</h1>
+        <p class="section-subtitle">Onboard a dining partner to the MealBite platform</p>
+    </div>
+    <div>
+        <a href="{% url 'admin_home' %}" class="btn btn-secondary btn-sm">
+            ← Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="form-card">
+    <form action="{% url 'add_restaurant' %}" method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="name">Restaurant Name *</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Pizza Paradise, Royal Biryani" value="{{ name|default:'' }}" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="cuisine">Cuisine Specialties *</label>
+            <input type="text" id="cuisine" name="cuisine" class="form-control" placeholder="e.g. Italian, Burgers, North Indian, Asian" value="{{ cuisine|default:'' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="picture">Restaurant Cover Image URL</label>
+            <input type="url" id="picture" name="picture" class="form-control" placeholder="https://images.unsplash.com/..." value="{{ picture|default:'' }}">
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">
+                💡 Leave empty to use our default curated restaurant photo.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="rating">Initial Rating (0 - 5.0)</label>
+            <input type="number" id="rating" name="rating" class="form-control" min="1" max="5" step="0.1" value="{{ rating|default:'4.5' }}" required>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 2;">
+                Save & Add Restaurant
+            </button>
+            <a href="{% url 'admin_home' %}" class="btn btn-secondary" style="flex: 1;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

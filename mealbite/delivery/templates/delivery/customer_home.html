@@ -1,0 +1,58 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}Restaurants | MealBite{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="hero" style="padding: 2.25rem 2rem; margin-bottom: 2rem; background: linear-gradient(135deg, #1E293B 0%, #334155 100%);">
+    <span class="hero-tag">👋 Hello, {{ username }}</span>
+    <h1 class="hero-title" style="font-size: 2.1rem; margin-bottom: 0.5rem;">Hungry? Explore Top Restaurants</h1>
+    <p class="hero-subtitle" style="margin-bottom: 0; max-width: 650px;">
+        Choose from our curated partner restaurants and enjoy fresh, delicious food prepared with love.
+    </p>
+</div>
+
+<!-- Section Header -->
+<div class="section-header">
+    <div>
+        <h2 class="section-title">Available Restaurants</h2>
+        <p class="section-subtitle">Showing {{ restaurantList|length }} dining spots ready to deliver</p>
+    </div>
+    <div>
+        <a href="{% url 'show_cart' username %}" class="btn btn-secondary">
+            🛒 Go to My Cart
+        </a>
+    </div>
+</div>
+
+<!-- Restaurant Cards Grid -->
+{% if restaurantList %}
+    <div class="restaurants-grid">
+        {% for r in restaurantList %}
+            <div class="restaurant-card">
+                <div class="restaurant-img-wrap">
+                    <img src="{{ r.picture }}" alt="{{ r.name }}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80';">
+                    <div class="restaurant-rating-badge">
+                        <span>★</span> {{ r.rating }}
+                    </div>
+                </div>
+                <div class="restaurant-info">
+                    <h3 class="restaurant-name">{{ r.name }}</h3>
+                    <div class="restaurant-cuisine">🍲 {{ r.cuisine }}</div>
+                    <div class="restaurant-actions">
+                        <a href="{% url 'view_menu' r.id username %}" class="btn btn-primary btn-block">
+                            View Menu & Order ➔
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="order-summary-card" style="text-align: center; padding: 3rem 1.5rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🍽️</div>
+        <h3>No restaurants available yet</h3>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">Please check back later or check the admin panel to add restaurants.</p>
+    </div>
+{% endif %}
+{% endblock %}

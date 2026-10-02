@@ -1,0 +1,59 @@
+{% extends "delivery/base.html" %}
+
+{% block title %}MealBite | Delicious Food Delivered to Your Door{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <span class="hero-tag">⚡ Fast 30-min Delivery</span>
+    <h1 class="hero-title">Craving Something Delicious?<br>We’ve Got You Covered.</h1>
+    <p class="hero-subtitle">
+        Explore handpicked top-rated restaurants, mouthwatering gourmet burgers, crispy pizzas, and fresh delicacies delivered directly to your doorstep.
+    </p>
+    <div class="hero-buttons">
+        <a href="{% url 'open_signin' %}" class="btn btn-primary">🍔 Order Food Now</a>
+        <a href="{% url 'open_signup' %}" class="btn btn-secondary">Create Account</a>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="section-header" style="margin-top: 1rem;">
+    <div>
+        <h2 class="section-title">Why Foodies Love MealBite</h2>
+        <p class="section-subtitle">The easiest, tastiest way to satisfy your cravings</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon orange">🚀</div>
+        <div>
+            <div class="stat-value">30 Mins</div>
+            <div class="stat-label">Average delivery time</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue">⭐</div>
+        <div>
+            <div class="stat-value">5.0 Star</div>
+            <div class="stat-label">Top rated restaurants</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">💳</div>
+        <div>
+            <div class="stat-value">Instant Pay</div>
+            <div class="stat-label">Razorpay & Cash on delivery</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick CTA Box -->
+<div class="order-summary-card" style="margin-top: 2rem; text-align: center; padding: 2.5rem 1.5rem; background: linear-gradient(to right, #FFF7ED, #FFFFFF);">
+    <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; color: #9A3412;">Ready to taste something awesome?</h3>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Join thousands of happy food lovers today.</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{% url 'open_signin' %}" class="btn btn-primary">Sign In to Order</a>
+        <a href="{% url 'open_signup' %}" class="btn btn-secondary">Register as New User</a>
+    </div>
+</div>
+{% endblock %}
